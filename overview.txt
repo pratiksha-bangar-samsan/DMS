@@ -1,1 +1,105 @@
 
+--------------------------- Project Structure and Purpose ---------------------------- 
+
+ 
+
+1) Audio alert/ 
+
+    Contains all the audio alert files (in .mp3 format). 
+    These sounds are triggered when an event is detected by the system. 
+
+        distraction.mp3 → Alert for driver distraction. 
+        face_obstruction.mp3 → Alert when face is blocked. 
+        fatigue.mp3 → Alert for drowsiness. 
+        obstruction.mp3 → General obstruction alert. 
+        phone_uses.mp3 → Alert when using phone. 
+        smoking.mp3 → Alert when smoking is detected. 
+        wearing_mask.mp3 → Alert when wearing mask. 
+        yawning.mp3 → Alert for yawning. 
+
+   Purpose: Store pre-recorded audio warnings for event detection. 
+
+2) GPIO Testing/ 
+    Blink LED/LED.py 
+
+    Python script for testing Jetson Nano GPIO pins using an LED. 
+    Helps verify hardware GPIO functionality before integrating with the main system. 
+
+    Purpose: Hardware peripheral testing (GPIO). 
+
+
+3) Networking/ 
+    Ethernet/client.py 
+    Implements a client-side program to send files/data over Ethernet. 
+
+    Ethernet/server.py 
+    Implements a server-side program to receive files/data over Ethernet. 
+
+    Purpose: Test Jetson Nano networking & Ethernet peripheral 	by  transferring files. 
+
+
+4) Software API/OpenCV Camera Stream/
+    recording.py 
+    Starts camera stream. 
+    If the user presses R, the system starts 10 Seconds recording video. 
+
+    snapshot.py 
+    Starts live camera feed. 
+    If user presses S, a snapshot (image capture) is saved. 
+
+    Purpose: Provides basic camera functionality (recording & snapshots). 
+
+
+5) main_scripts/ 
+Contains all the core DMS Event Detection Codes. 
+
+    Alerts/ 
+    voice_alert.py 
+    Code for generating voice/audio alerts when an event is detected. 
+
+
+    face_recognization/ 
+    face_app.py → Application script for running face recognition. 
+    face_capture.py → Captures and stores faces for recognition database. 
+    face_recognize.py → Compares live face with stored faces to check if driver is known/unknown. 
+    faces.json → Database storing face encodings. 
+    index.py → Likely entry point for face recognition module. 
+
+    Purpose: Implement event detection + face recognition with 	 alerts. 
+
+
+    roi_processing/ 
+    roiinput.py → Runs event detection with ROI (Region of Interest) input from command line (left/right). 
+    withoutroi.py → Runs event detection without ROI processing. 
+
+ 
+    Ui_controls/ 
+    Ui_enable_disable/ 
+      Config.ini - 
+          Contains flag ui_enable = True/False 
+          If True → Runs with UI (ui.py). 
+          If False → Runs without UI (withoutui.py). 
+      Main.ini - Calls both ui.py and withoutui.py depending on configuration. 
+      Ui.py - Runs event detection with GUI and voice alerts.
+      Withoutui.py -Runs event detection without GUI, only voice alerts. 
+
+    Radiobuttonoption.py -> Provides a menu with options to select which detection module/script to run.  
+                            Options – 1) DMS Events 2) Mask Detection 
+    Uidisable.py -> Runs event detection without UI, only generating audio alerts. 
+
+6) log_file/ 
+    event_log.csv - Stores logs of detected events (e.g., yawning, distraction, phone use). 
+    Purpose: Maintain event history for analysis. 
+
+7) icons/ 
+    Contains image icons (e.g., face.png, smoke.jpg, yawn.png). 
+    Likely used in GUI/dashboard visualization. 
+    Purpose: Support visual representation of events. 
+
+8) Other Docs 
+    config.ini → Configuration file (system settings). 
+    requirements.txt → Python dependencies to run the project. 
+    DMS_Doc/ → Driver Monitoring System Event Detection Documentation. 
+    Peripheral Testing Doc/ → Document with peripheral testing details. 
+
+ 
