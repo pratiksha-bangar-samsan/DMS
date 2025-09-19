@@ -37,19 +37,20 @@ def mouth_aspect_ratio(landmarks, MOUTH_INNER_TOP, MOUTH_INNER_BOTTOM, MOUTH_OUT
 class EdgetensorDMMMonitor:
     def __init__(self, roi_position, config_file='config.ini'):
         self.config = self.load_config(config_file)
-
+        
         # Initialize video capture
         self.cap = cv2.VideoCapture(0)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-
+        
         # Screen layout and thresholds from config
         self.video_width = 800
         self.panel_width = 490
         self.display_height = 750
         self.video_height = self.display_height
         self.display_width = self.video_width + self.panel_width
-  # Load thresholds and timers from config
+
+        # Load thresholds and timers from config
         self.EAR_THRESHOLD = self.config.getfloat('THRESHOLDS', 'ear_threshold')
         self.YAWN_THRESHOLD = self.config.getfloat('THRESHOLDS', 'yawn_threshold')
         self.BRIGHTNESS_THRESHOLD = self.config.getfloat('THRESHOLDS', 'brightness_threshold')
@@ -68,7 +69,7 @@ class EdgetensorDMMMonitor:
         self.PHONE_USE_TIME = self.config.getfloat('TIMERS', 'phone_use_time')
         self.EATING_DRINKING_TIME = self.config.getfloat('TIMERS', 'eating_drinking_time')
         self.ALERT_DELAY_SECONDS = self.config.getfloat('TIMERS', 'alert_delay_seconds')
-
+        
         # Facial landmark indices
         self.LEFT_EYE = [362, 385, 387, 263, 373, 380]
         self.RIGHT_EYE = [33, 160, 158, 133, 153, 144]
@@ -84,7 +85,7 @@ class EdgetensorDMMMonitor:
 
         self.roi_position = roi_position
         self.roi_x1, self.roi_y1, self.roi_x2, self.roi_y2 = self.get_roi_coordinates(roi_position)
-
+        
         self.icons_path = "/home/jetson/DMS_new/Detection/icons"
         self.audio_path = "/home/jetson/obstruction_gpu/audio_alert" # New Audio Path
         self.icons = {}
@@ -98,9 +99,9 @@ class EdgetensorDMMMonitor:
             'face_obstruction': 'face_obstruction.mp3',
             'smoking': 'smoking.mp3',
             'phone_uses': 'phone_uses.mp3',
- 'eating_drinking': 'eating_drinking.mp3',
+            'eating_drinking': 'eating_drinking.mp3',
             'seatbelt_off': 'seatbelt_off.mp3',
-
+          
         }
 
         self.events = {
@@ -128,7 +129,7 @@ class EdgetensorDMMMonitor:
         self.eating_drinking_start_time = None
         self.camera_obstructed_start_time = None
         self.face_obstructed_start_time = None
-
+        
         self.gaze_text = "No Face"
         self.metrics = {'fps': 0, 'frame_processing_time': 0, 'faces_detected': 0}
         self.head_pose_yaw = 0.0
@@ -147,10 +148,10 @@ class EdgetensorDMMMonitor:
     
     def get_roi_coordinates(self, roi_position):
         try:
-section_name = f'ROI_{roi_position}'
+            section_name = f'ROI_{roi_position}'
             if not self.config.has_section(section_name):
                 section_name = f"ROI_{self.config.get('DEFAULT', 'active_roi')}"
-
+            
             x1 = self.config.getint(section_name, 'x1')
             y1 = self.config.getint(section_name, 'y1')
             x2 = self.config.getint(section_name, 'x2')
@@ -194,7 +195,7 @@ section_name = f'ROI_{roi_position}'
             icon_loaded = False
             for path in possible_paths:
                 full_path = os.path.join(self.icons_path, path)
-if os.path.exists(full_path):
+                if os.path.exists(full_path):
                     try:
                         icon = cv2.imread(full_path, cv2.IMREAD_UNCHANGED)
                         if icon is not None:
@@ -241,6 +242,7 @@ if os.path.exists(full_path):
                 if len(icon_to_draw.shape) == 2:
                     icon_to_draw = cv2.cvtColor(icon_to_draw, cv2.COLOR_GRAY2BGR)
                 frame[y:y + h, x:x + w] = icon_to_draw
+
     def detect_eye_closure(self, landmarks):
         left_eye_landmarks = [landmarks[i] for i in self.LEFT_EYE]
         right_eye_landmarks = [landmarks[i] for i in self.RIGHT_EYE]
@@ -286,7 +288,8 @@ if os.path.exists(full_path):
                 roll = np.arctan2(rotation_matrix[2, 1], rotation_matrix[2, 2])
             else:
                 pitch = np.arctan2(-rotation_matrix[2, 0], sy)
-                yaw = np.arctan2(-rotation_matrix[1, 2], rotation_matrix[1, 1]) roll = 0.0
+                yaw = np.arctan2(-rotation_matrix[1, 2], rotation_matrix[1, 1])
+                roll = 0.0
             yaw_deg = np.degrees(yaw)
             pitch_deg = np.degrees(pitch)
             roll_deg = np.degrees(roll)
@@ -333,8 +336,7 @@ if os.path.exists(full_path):
                     self.events['camera_obstruction']['alert_time'] = current_time
             for event_name in self.events:
                 if event_name not in ['camera_obstruction', 'face_obstruction']:
-
-self.events[event_name]['active'] = False
+                    self.events[event_name]['active'] = False
                     self.events[event_name]['timer'] = 0.0
             return
         else:
@@ -382,9 +384,9 @@ self.events[event_name]['active'] = False
             self.distraction_start_time = None
             self.events['distraction']['active'] = False
             self.events['distraction']['timer'] = 0.0
- for direction in self.direction_timers:
+            for direction in self.direction_timers:
                 self.direction_timers[direction] = 0.0
-
+                
         # Handle Yawning
         if yawn_detected:
             if self.yawning_start_time is None:
@@ -420,21 +422,21 @@ self.events[event_name]['active'] = False
         self.events['left_eye_closed']['timer'] = (self.events['left_eye_closed']['timer'] + delta_time) if left_eye_closed else 0.0
         self.events['right_eye_closed']['active'] = right_eye_closed
         self.events['right_eye_closed']['timer'] = (self.events['right_eye_closed']['timer'] + delta_time) if right_eye_closed else 0.0
-
+        
         # Reset other timers if a major event is active
         if self.events['fatigue']['active'] or self.events['yawning']['active'] or self.events['distraction']['active']:
             self.events['smoking']['active'] = False
             self.events['smoking']['timer'] = 0.0
             self.smoking_start_time = None
-
+            
             self.events['phone_uses']['active'] = False
             self.events['phone_uses']['timer'] = 0.0
             self.phone_use_start_time = None
-
-self.events['eating_drinking']['active'] = False
+            
+            self.events['eating_drinking']['active'] = False
             self.events['eating_drinking']['timer'] = 0.0
             self.eating_drinking_start_time = None
-
+            
             self.events['wearing_mask']['active'] = False
             self.events['wearing_mask']['timer'] = 0.0
 
@@ -477,7 +479,8 @@ self.events['eating_drinking']['active'] = False
             obstruction_text = "Camera is Obstructed"
         elif self.events['face_obstruction']['active']:
             obstruction_text = "Face is Obstructed"
- params = [
+
+        params = [
             f"Camera FPS: {self.metrics['fps']:.1f}",
             f"Distraction_Looking_left: {self.direction_timers['left']:.1f} secs",
             f"Distraction_Looking_right: {self.direction_timers['right']:.1f} secs",
@@ -506,7 +509,7 @@ self.events['eating_drinking']['active'] = False
     def run(self):
         print("Starting Samsan DMS Monitor...")
         print("Press 'q' to quit")
-
+        
         while True:
             frame_start_time = time.time()
             ret, frame = self.cap.read()
@@ -521,24 +524,24 @@ self.events['eating_drinking']['active'] = False
             cv2.putText(video_resized, f"ROI: {self.roi_position}", (self.roi_x1, self.roi_y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1)
 
             is_camera_obstructed = self.check_camera_obstruction(video_resized)
-
+            
             yawn_detected = False
             distraction_detected_from_head_pose = False
             head_direction = None
             left_eye_closed = False
-right_eye_closed = False
+            right_eye_closed = False
             faces_detected = 0
 
             self.head_pose_yaw = 0.0
             self.head_pose_pitch = 0.0
             self.head_pose_roll = 0.0
-
+            
             if not is_camera_obstructed:
                 # Crop the frame to the ROI before processing with MediaPipe
                 roi_frame = video_resized[self.roi_y1:self.roi_y2, self.roi_x1:self.roi_x2]
                 rgb_frame = cv2.cvtColor(roi_frame, cv2.COLOR_BGR2RGB)
                 results = self.face_mesh.process(rgb_frame)
-
+                
                 if results.multi_face_landmarks:
                     faces_detected = len(results.multi_face_landmarks)
                     for face_landmarks in results.multi_face_landmarks:
@@ -548,7 +551,7 @@ right_eye_closed = False
                         for landmark in full_frame_landmarks.landmark:
                             landmark.x = (landmark.x * w_roi + self.roi_x1) / self.video_width
                             landmark.y = (landmark.y * h_roi + self.roi_y1) / self.video_height
-
+                        
                         # Draw face contour
                         self.mp_drawing.draw_landmarks(
                             image=video_resized,
@@ -576,18 +579,18 @@ right_eye_closed = False
                         self.mp_drawing.draw_landmarks(
                             image=video_resized,
                             landmark_list=full_frame_landmarks,
-connections=self.mp_face_mesh.FACEMESH_LIPS,
+                            connections=self.mp_face_mesh.FACEMESH_LIPS,
                             landmark_drawing_spec=None,
                             connection_drawing_spec=self.mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=1)
                         )
-
+                        
                         # Perform detection based on landmarks
                         left_eye_closed, right_eye_closed = self.detect_eye_closure(full_frame_landmarks.landmark)
                         yawn_detected, _ = self.detect_yawn(full_frame_landmarks.landmark)
                         distraction_detected_from_head_pose, head_direction, self.head_pose_yaw, self.head_pose_pitch, self.head_pose_roll = self.detect_head_pose(full_frame_landmarks.landmark)
 
             self.update_event_states(yawn_detected, distraction_detected_from_head_pose, head_direction, left_eye_closed, right_eye_closed, is_camera_obstructed, faces_detected)
-
+            
             # Draw panels
             self.draw_dms_events_panel(display_frame)
             self.draw_dms_output_panel(display_frame)
@@ -606,7 +609,7 @@ connections=self.mp_face_mesh.FACEMESH_LIPS,
         self.cap.release()
         cv2.destroyAllWindows()
         print("Samsan DMS Monitor stopped.")
-
+        
 
 def start_event_detection():
     """
@@ -624,4 +627,3 @@ def start_event_detection():
 if __name__ == '__main__':
     # This block will run only when the script is executed directly
     start_event_detection()
-
